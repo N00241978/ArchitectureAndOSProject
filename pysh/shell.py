@@ -80,15 +80,14 @@ def execute(command, args):
 def main():
     """Entry point for the shell."""
 
-    print(
-        r"""
- __
- \ \
-  \ \
-  / /
- /_/   ______
-      /_____/"""
-    )
+    print(r"""
+        /`·.,¸
+        /¸...¸`:·
+    ,.·´  ¸   `·.,.·´)
+    : © ):´;      ¸  {
+    `·., `·  ¸.·´\`·¸)
+        `\\´´\¸.·´
+    """)
 
     print()
     print("Welcome to pysh! Type 'help' to see available commands.\n")
