@@ -83,10 +83,23 @@ def builtin_procinfo(args):
         print(f"PID: {pid}")
         print(f"Status: {status}")
         print(f"Memory: {memory} bytes")
-        print(f"CPU Time: {cpu_time:.2f}s")
+        print(f"CPU Time: {cpu_time:.3f}s")
         print(f"Parent PID: {ppid}")
 
     except psutil.NoSuchProcess:
         print(f"Process with PID {pid} does not exist.")
     except Exception as e:
         print(f"Error retrieving process information: {e}")
+
+
+def builtin_cat(args):
+    filename = args[0]
+
+    try:
+        with open(filename, "r") as f:
+            content = f.read()
+            print(content)
+    except FileNotFoundError:
+        print(f"cat: {filename}: No such file")
+    except PermissionError:
+        print(f"cat: {filename}: Permission denied")
