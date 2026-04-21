@@ -108,12 +108,12 @@ def builtin_cat(args):
 
 def builtin_head(args):
     filename = args[0]
-    rangeNum = args[1]
+    rangeNum = int(args[1])
     content = []
 
     try:
-        for i in range(int(rangeNum)):
-            with open(filename, "r") as f:
+        with open(filename, "r") as f:
+            for i in range(rangeNum):
                 line = f.readline()
                 content.append(line)
         print("\n".join(content))
@@ -122,6 +122,24 @@ def builtin_head(args):
     except PermissionError:
         print(f"head: {filename}: Permission denied")
 
-    
-    
+def builtin_wc(args):
+    filename = args[0]
+
+    try:
+        with open(filename, "r") as f:
+            lines = 0
+            words = 0
+            chars = 0
+
+            for line in f:
+                lines += 1
+                words += len(line.split())
+                chars += len(line)
+
+        print(f"{lines} {words} {chars} {filename}")
+
+    except FileNotFoundError:
+        print(f"wc: {filename}: No such file")
+    except PermissionError:
+        print(f"wc: {filename}: Permission denied")
     
