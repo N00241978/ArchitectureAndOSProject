@@ -81,16 +81,16 @@ def main():
     """Entry point for the shell."""
 
     print(r"""
-        /`·.,¸
-        /¸...¸`:·
+        /`·.,¸          <  BLUB BLUB
+        /¸...¸`:· 
     ,.·´  ¸   `·.,.·´)
-    : © ):´;      ¸  {
+    : © ):´;      ¸  { 
     `·., `·  ¸.·´\`·¸)
-        `\\´´\¸.·´
+        `\\´´\¸.·´ 
     """)
 
     print()
-    print("Welcome to pysh! Type 'help' to see available commands.\n")
+    print("WELCOME to pysh! Type 'help' to see available commands.\n")
 
     while True:
         try:
