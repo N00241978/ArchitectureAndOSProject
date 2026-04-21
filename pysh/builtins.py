@@ -52,3 +52,9 @@ def builtin_exit(args):
 #       Each function receives a list of string arguments.
 #       Look at builtin_pwd above as an example to follow.
 # ---------------------------------------------------------------------------
+
+def builtin_cd(args):
+    os.chdir(args[0])
+
+def builtin_echo(args):
+    print(" ".join(args))
