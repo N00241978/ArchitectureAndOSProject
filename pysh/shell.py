@@ -106,7 +106,7 @@ def main():
 
         except EOFError:
             # Ctrl+D — exit the shell
-            print("\nGoodbye!")
+            print("\nNOOO DONT LEAVE ME NOOOOOOO!")
             break
 
         except KeyboardInterrupt:
