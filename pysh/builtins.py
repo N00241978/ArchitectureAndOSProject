@@ -68,6 +68,8 @@ def builtin_help(args):
     print("  cd <dir> - Change the current directory to <dir>")
     print("  echo <args> - Print the arguments to the console")
     print("  procinfo <pid> - Show information about a process")
+    print("  cat <file> - Print the contents of a file")
+    print("  head <file> <n> - Print the first n lines of a file")
 
 def builtin_procinfo(args):
     try:
@@ -103,3 +105,23 @@ def builtin_cat(args):
         print(f"cat: {filename}: No such file")
     except PermissionError:
         print(f"cat: {filename}: Permission denied")
+
+def builtin_head(args):
+    filename = args[0]
+    rangeNum = args[1]
+    content = []
+
+    try:
+        for i in range(int(rangeNum)):
+            with open(filename, "r") as f:
+                line = f.readline()
+                content.append(line)
+        print("\n".join(content))
+    except FileNotFoundError:
+        print(f"head: {filename}: No such file")
+    except PermissionError:
+        print(f"head: {filename}: Permission denied")
+
+    
+    
+    
