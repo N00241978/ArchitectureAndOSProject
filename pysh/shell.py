@@ -13,8 +13,8 @@ import grp
 import os
 import subprocess
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_cd, builtin_echo, builtin_help, builtin_procinfo, builtin_cat, builtin_head, builtin_wc
-from pysh.colors import BLUE, GREEN, RESET
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_cd, builtin_echo, builtin_help, builtin_procinfo, builtin_cat, builtin_head, builtin_wc, bytes_to_mb, clear_screen, builtin_sysinfo
+from pysh.colors import BLUE, GREEN, RESET, RED, YELLOW
 
 
 def prompt():
@@ -67,6 +67,10 @@ def execute(command, args):
         builtin_head(args)
     elif command == "wc":
         builtin_wc(args)
+    elif command == "clear":
+        clear_screen()
+    elif command == "sysinfo":
+        builtin_sysinfo(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,
@@ -80,17 +84,17 @@ def execute(command, args):
 def main():
     """Entry point for the shell."""
 
-    print(r"""
-        /`·.,¸          <  BLUB BLUB
-        /¸...¸`:· 
-    ,.·´  ¸   `·.,.·´)
-    : © ):´;      ¸  { 
-    `·., `·  ¸.·´\`·¸)
-        `\\´´\¸.·´ 
-    """)
+    print(f"""{RED}
+    O                /`·.,,          {YELLOW}<  BLUB BLUB {RED}
+      O              /,...,`:· 
+        o       ,.·´  ,   `·.,.·´)
+            o  < : © ):';      ,  {{
+                `·., `·  ,.·´\`·¸)
+                    `\\''\,.·´ 
+    {RESET}""")
 
     print()
-    print("WELCOME to pysh! Type 'help' to see available commands.\n")
+    print(f"{GREEN}WELCOME to pysh! Type '{BLUE}help{GREEN}' to see available commands.{RESET}\n")
 
     while True:
         try:
@@ -106,7 +110,19 @@ def main():
 
         except EOFError:
             # Ctrl+D — exit the shell
-            print("\nNOOO DONT LEAVE ME NOOOOOOO!")
+            print(f"""\n{RED}                                                              NOOO DONT LEAVE ME! NOOOOOOO!
+                +--^----------,--------,-----,--------^-,     -   _____
+                | |||||||||   `--------'     |          O      =  |_____|]
+                `+---------------------------^----------|     -
+                `\_,---------,---------,--------------'
+                /    / XXXXXX /'|       /'
+                /    / XXXXXX /  `\    /'
+                / XXXXXX /`-------'
+                / XXXXXX /
+                / XXXXXX /
+                (________(                
+                `------'              
+            {RESET}""")
             break
 
         except KeyboardInterrupt:
