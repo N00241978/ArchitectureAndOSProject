@@ -13,7 +13,7 @@ import grp
 import os
 import subprocess
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_cd, builtin_echo, builtin_help, builtin_procinfo, builtin_cat, builtin_head, builtin_wc, bytes_to_mb, clear_screen, builtin_sysinfo
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_cd, builtin_echo, builtin_help, builtin_procinfo, builtin_cat, builtin_head, builtin_wc, bytes_to_mb, clear_screen, builtin_sysinfo, builtin_download
 from pysh.colors import BLUE, GREEN, RESET, RED, YELLOW
 
 
@@ -71,6 +71,8 @@ def execute(command, args):
         clear_screen()
     elif command == "sysinfo":
         builtin_sysinfo(args)
+    elif command == "download":
+        builtin_download(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,
