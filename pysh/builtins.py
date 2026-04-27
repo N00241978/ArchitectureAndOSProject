@@ -61,11 +61,14 @@ def builtin_exit(args):
 #       Look at builtin_pwd above as an example to follow.
 # ---------------------------------------------------------------------------
 
+
 def builtin_cd(args):
     os.chdir(args[0])
 
+
 def builtin_echo(args):
     print(" ".join(args))
+
 
 def builtin_help(args):
     print(f"{GREEN}  help - Show this help message")
@@ -77,6 +80,7 @@ def builtin_help(args):
     print("  procinfo <pid> - Show information about a process")
     print("  cat <file> - Print the contents of a file")
     print(f"  head <file> <n> - Print the first n lines of a file{RESET}")
+
 
 def builtin_procinfo(args):
     try:
@@ -113,6 +117,7 @@ def builtin_cat(args):
     except PermissionError:
         print(f"{RED}cat: {filename}: Permission denied{RESET}")
 
+
 def builtin_head(args):
     filename = args[0]
     rangeNum = int(args[1])
@@ -128,6 +133,7 @@ def builtin_head(args):
         print(f"{RED}head: {filename}: No such file{RESET}")
     except PermissionError:
         print(f"{RED}head: {filename}: Permission denied{RESET}")
+
 
 def builtin_wc(args):
     filename = args[0]
@@ -150,11 +156,14 @@ def builtin_wc(args):
     except PermissionError:
         print(f"{RED}wc: {filename}: Permission denied{RESET}")
 
+
 def bytes_to_mb(num_bytes):
     return num_bytes / (1024 * 1024)
 
+
 def clear_screen():
     os.system("clear")
+
 
 def builtin_sysinfo(args):
     sort_by = "memory"
@@ -193,7 +202,7 @@ def builtin_sysinfo(args):
         for proc in psutil.process_iter(["pid", "name"]):
             try:
                 proc.cpu_percent(interval=None)
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            except psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess:
                 pass
 
         while True:
@@ -211,17 +220,23 @@ def builtin_sysinfo(args):
                     info = proc.info
                     pid = info["pid"]
                     name = info["name"] or "Unknown"
-                    memory_mb = bytes_to_mb(info["memory_info"].rss) if info["memory_info"] else 0
+                    memory_mb = (
+                        bytes_to_mb(info["memory_info"].rss)
+                        if info["memory_info"]
+                        else 0
+                    )
                     cpu_percent = proc.cpu_percent(interval=None)
 
-                    processes.append({
-                        "pid": pid,
-                        "name": name,
-                        "memory_mb": memory_mb,
-                        "cpu_percent": cpu_percent
-                    })
+                    processes.append(
+                        {
+                            "pid": pid,
+                            "name": name,
+                            "memory_mb": memory_mb,
+                            "cpu_percent": cpu_percent,
+                        }
+                    )
 
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                except psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess:
                     continue
 
             if sort_by == "cpu":
@@ -259,10 +274,14 @@ def builtin_sysinfo(args):
             print("-" * 55)
 
             for proc in top_processes:
-                print(f"{proc['pid']:>6} {proc['name'][:25]:<25} {proc['cpu_percent']:>8.1f} {proc['memory_mb']:>10.2f}")
+                print(
+                    f"{proc['pid']:>6} {proc['name'][:25]:<25} {proc['cpu_percent']:>8.1f} {proc['memory_mb']:>10.2f}"
+                )
 
             print()
-            print(f"{BLUE}Refreshing every {interval} second(s). Press Ctrl+C to return to shell.{RESET}")
+            print(
+                f"{BLUE}Refreshing every {interval} second(s). Press Ctrl+C to return to shell.{RESET}"
+            )
 
             time.sleep(interval)
 
@@ -270,12 +289,14 @@ def builtin_sysinfo(args):
         print()
         print(f"{RED}Exiting sysinfo...{RESET}")
 
+
 download_queue = queue.Queue()
 download_lock = threading.Lock()
 completed_downloads = 0
 active_workers = 0
 download_threads = []
 downloader_started = False
+
 
 def safe_filename_from_url(url):
     parsed = urlparse(url)
@@ -286,15 +307,18 @@ def safe_filename_from_url(url):
 
     return name
 
+
 def unique_filepath(folder, filename):
     base, ext = os.path.splitext(filename)
     counter = 1
+    candidate = os.path.join(folder, filename)
 
     while os.path.exists(candidate):
         candidate = os.path.join(folder, f"{base}_{counter}{ext}")
         counter += 1
 
     return candidate
+
 
 def download_worker():
     global completed_downloads, active_workers
@@ -304,7 +328,7 @@ def download_worker():
 
         with download_lock:
             active_workers += 1
-        
+
         try:
             downloads_dir = os.path.join(os.getcwd(), "downloads")
             os.makedirs(downloads_dir, exist_ok=True)
@@ -312,8 +336,8 @@ def download_worker():
             response = requests.get(url, timeout=10, stream=True)
             response.raise_for_status()
 
-            filename = _safe_filename_from_url(url)
-            filepath = _unique_filepath(downloads_dir, filename)
+            filename = safe_filename_from_url(url)
+            filepath = unique_filepath(downloads_dir, filename)
 
             with open(filepath, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
@@ -335,18 +359,19 @@ def download_worker():
             download_queue.task_done()
 
 
-def _start_download_workers(num_workers):
+def start_download_workers(num_workers):
     global downloader_started, download_threads
 
     if downloader_started:
         return
 
     for _ in range(num_workers):
-        t = threading.Thread(target=_download_worker, daemon=True)
+        t = threading.Thread(target=download_worker, daemon=True)
         t.start()
         download_threads.append(t)
 
     downloader_started = True
+
 
 def builtin_download(args):
     global downloader_started
@@ -401,10 +426,12 @@ def builtin_download(args):
         return
 
     if not downloader_started:
-        _start_download_workers(worker_count)
+        start_download_workers(worker_count)
     else:
         if worker_count != len(download_threads):
-            print(f"{YELLOW}download: workers already running ({len(download_threads)} active). Using existing pool.{RESET}")
+            print(
+                f"{YELLOW}download: workers already running ({len(download_threads)} active). Using existing pool.{RESET}"
+            )
 
     os.makedirs(os.path.join(os.getcwd(), "downloads"), exist_ok=True)
 

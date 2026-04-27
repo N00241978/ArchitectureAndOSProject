@@ -13,7 +13,23 @@ import grp
 import os
 import subprocess
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_cd, builtin_echo, builtin_help, builtin_procinfo, builtin_cat, builtin_head, builtin_wc, bytes_to_mb, clear_screen, builtin_sysinfo, builtin_download
+from pysh.builtins import (
+    builtin_exit,
+    builtin_pwd,
+    builtin_cd,
+    builtin_echo,
+    builtin_help,
+    builtin_procinfo,
+    builtin_cat,
+    builtin_head,
+    builtin_wc,
+    bytes_to_mb,
+    clear_screen,
+    builtin_sysinfo,
+    builtin_download,
+    start_download_workers,
+    download_worker,
+)
 from pysh.colors import BLUE, GREEN, RESET, RED, YELLOW
 
 
@@ -96,7 +112,9 @@ def main():
     {RESET}""")
 
     print()
-    print(f"{GREEN}WELCOME to pysh! Type '{BLUE}help{GREEN}' to see available commands.{RESET}\n")
+    print(
+        f"{GREEN}WELCOME to pysh! Type '{BLUE}help{GREEN}' to see available commands.{RESET}\n"
+    )
 
     while True:
         try:
