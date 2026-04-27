@@ -13,23 +13,8 @@ import grp
 import os
 import subprocess
 
-from pysh.builtins import (
-    builtin_exit,
-    builtin_pwd,
-    builtin_cd,
-    builtin_echo,
-    builtin_help,
-    builtin_procinfo,
-    builtin_cat,
-    builtin_head,
-    builtin_wc,
-    bytes_to_mb,
-    clear_screen,
-    builtin_sysinfo,
-    builtin_download,
-    start_download_workers,
-    download_worker,
-)
+import pysh.builtins as builtins
+
 from pysh.colors import BLUE, GREEN, RESET, RED, YELLOW
 
 
@@ -66,29 +51,27 @@ def execute(command, args):
 
     # TODO: Add your own built-in commands here
     if command == "pwd":
-        builtin_pwd(args)
+        builtins.pwd(args)
     elif command == "exit":
-        builtin_exit(args)
+        builtins.exit(args)
     elif command == "cd":
-        builtin_cd(args)
+        builtins.cd(args)
     elif command == "echo":
-        builtin_echo(args)
+        builtins.echo(args)
     elif command == "help":
-        builtin_help(args)
+        builtins.help(args)
     elif command == "procinfo":
-        builtin_procinfo(args)
+        builtins.procinfo(args)
     elif command == "cat":
-        builtin_cat(args)
+        builtins.cat(args)
     elif command == "head":
-        builtin_head(args)
+        builtins.head(args)
     elif command == "wc":
-        builtin_wc(args)
-    elif command == "clear":
-        clear_screen()
+        builtins.wc(args)
     elif command == "sysinfo":
-        builtin_sysinfo(args)
+        builtins.sysinfo(args)
     elif command == "download":
-        builtin_download(args)
+        builtins.download(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,
