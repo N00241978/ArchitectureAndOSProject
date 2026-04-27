@@ -1,114 +1,86 @@
-import time
-import psutil
-import threading
-import queue
-import requests
-from urllib import parse as urlparse
 import os
+import requests
+import queue
+import threading
+from urllib import parse as urlparse
 from pysh.colors import BLUE, GREEN, RESET, RED, YELLOW
 
-download_queue = queue.Queue()
-download_lock = threading.Lock()
-completed_downloads = 0
-active_workers = 0
-download_threads = []
-downloader_started = False
+
+download_state = {
+    "queue": queue.Queue(),
+    "threads": [],
+    "active": [],
+    "completed": [],
+    "failed": [],
+    "download_dir": "downloads",
+    "lock": threading.Lock(),
+}
 
 
-def safe_filename_from_url(url):
-    parsed = urlparse(url)
-    name = os.path.basename(parsed.path)
-
-    if not name:
-        name = "downloaded_file"
-
-    return name
-
-
-def unique_filepath(folder, filename):
-    base, ext = os.path.splitext(filename)
-    counter = 1
-    candidate = os.path.join(folder, filename)
-
-    while os.path.exists(candidate):
-        candidate = os.path.join(folder, f"{base}_{counter}{ext}")
-        counter += 1
-
-    return candidate
-
-
-def download_worker():
-    global completed_downloads, active_workers
-
+def download_worker() -> None:
     while True:
-        url = download_queue.get()
+        url = download_state["queue"].get()
 
-        with download_lock:
-            active_workers += 1
+        with download_state["lock"]:
+            download_state["active"].append(url)
 
         try:
-            downloads_dir = os.path.join(os.getcwd(), "downloads")
-            os.makedirs(downloads_dir, exist_ok=True)
+            os.makedirs(download_state["download_dir"], exist_ok=True)
 
-            response = requests.get(url, timeout=10, stream=True)
+            response = requests.get(url, timeout=10)
             response.raise_for_status()
 
-            filename = safe_filename_from_url(url)
-            filepath = unique_filepath(downloads_dir, filename)
+            parsed = urlparse.urlparse(url)
+            filename = os.path.basename(parsed.path) or "downloaded_file"
+            filepath = os.path.join(download_state["download_dir"], filename)
 
             with open(filepath, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
+                f.write(response.content)
 
-            with download_lock:
-                completed_downloads += 1
+            with download_state["lock"]:
+                download_state["completed"].append(url)
 
-            print(f"{GREEN}Downloaded:{RESET} {url} -> {filepath}")
+            # print(f"{GREEN}Downloaded:{RESET} {url} -> {filepath}")
 
         except requests.exceptions.RequestException as e:
+            with download_state["lock"]:
+                download_state["failed"].append((url, e))
+
             print(f"{RED}download error:{RESET} {url} ({e})")
+
         except Exception as e:
+            with download_state["lock"]:
+                download_state["failed"].append((url, e))
+
             print(f"{RED}file error:{RESET} {url} ({e})")
+
         finally:
-            with download_lock:
-                active_workers -= 1
-            download_queue.task_done()
+            with download_state["lock"]:
+                if url in download_state["active"]:
+                    download_state["active"].remove(url)
+
+            download_state["queue"].task_done()
 
 
-def start_download_workers(num_workers):
-    global downloader_started, download_threads
-
-    if downloader_started:
-        return
-
-    for _ in range(num_workers):
-        t = threading.Thread(target=download_worker, daemon=True)
-        t.start()
-        download_threads.append(t)
-
-    downloader_started = True
-
-
-def builtin_download(args):
-    global downloader_started
-
+def builtin_download(args) -> None:
     if not args:
         print(f"{RED}Usage:{RESET} download <file> [-w number] | download --status")
         return
 
     if args[0] == "--status":
-        with download_lock:
-            queued = download_queue.qsize()
-            active = active_workers
-            completed = completed_downloads
-            workers = len(download_threads)
+        with download_state["lock"]:
+            queued = download_state["queue"].qsize()
+            workers = len(download_state["threads"])
+            active = len(download_state["active"])
+            completed = len(download_state["completed"])
+            failed = len(download_state["failed"])
 
         print(f"{BLUE}Download Status{RESET}")
         print(f"  Queued:     {queued}")
+        print(f"  Workers:    {workers}")
         print(f"  Active:     {active}")
         print(f"  Completed:  {completed}")
-        print(f"  Workers:    {workers}")
+        print(f"  Failed:     {failed}")
         return
 
     url_file = args[0]
@@ -142,19 +114,16 @@ def builtin_download(args):
         print(f"{YELLOW}download: no URLs found in {url_file}{RESET}")
         return
 
-    if not downloader_started:
-        start_download_workers(worker_count)
-    else:
-        if worker_count != len(download_threads):
-            print(
-                f"{YELLOW}download: workers already running ({len(download_threads)} active). Using existing pool.{RESET}"
-            )
+    os.makedirs(download_state["download_dir"], exist_ok=True)
 
-    os.makedirs(os.path.join(os.getcwd(), "downloads"), exist_ok=True)
+    while len(download_state["threads"]) < worker_count:
+        thread = threading.Thread(target=download_worker, daemon=True)
+        thread.start()
+        download_state["threads"].append(thread)
 
     for url in urls:
-        download_queue.put(url)
+        download_state["queue"].put(url)
 
     print(f"{GREEN}Queued {len(urls)} download(s){RESET}")
-    print(f"{BLUE}Workers running:{RESET} {len(download_threads)}")
+    print(f"{BLUE}Workers running:{RESET} {len(download_state['threads'])}")
     print(f"{BLUE}Use 'download --status' to check progress.{RESET}")
