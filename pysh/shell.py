@@ -86,7 +86,7 @@ def main():
     """Entry point for the shell."""
 
     print(f"""{RED}
-    O                /`·.,,          {YELLOW}<  BLUB BLUB {RED}
+    O                /`·.,,          {YELLOW}<  BLUB BLUB BLUB {RED}
       O              /,...,`:· 
         o       ,.·´  ,   `·.,.·´)
             o  < : © ):';      ,  {{
@@ -113,7 +113,7 @@ def main():
 
         except EOFError:
             # Ctrl+D — exit the shell
-            print(f"""\n{RED}                                                              NOOO DONT LEAVE ME! NOOOOOOO!
+            print(f"""\n{RED}                                                                            NOOO DONT LEAVE ME! NOOOOOOO!
                 +--^----------,--------,-----,--------^-,     -   _____
                 | |||||||||   `--------'     |          O      =  |_____|]
                 `+---------------------------^----------|     -

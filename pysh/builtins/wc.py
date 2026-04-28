@@ -15,7 +15,7 @@ def builtin_wc(args):
                 words += len(line.split())
                 chars += len(line)
 
-        print(f"{lines} {words} {chars} {filename}")
+        print(f"Lines: {lines} Words: {words} Chars: {chars} Filename: {filename}")
 
     except FileNotFoundError:
         print(f"{RED}wc: {filename}: No such file{RESET}")
